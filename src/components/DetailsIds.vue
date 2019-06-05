@@ -63,10 +63,10 @@ export default {
 
 		}).then(detailsArray => {
 			this.detailsArray = detailsArray
-				.sort((a, b) => a.age - b.age)
-				.filter(a => a && a.number && a.number.match(PHONE_REGEX))
-				.slice(0, PERSON_LIMIT)
-				.sort((a, b) => a.name.localeCompare(b.name))
+			.sort((a, b) => a.age - b.age)
+			.filter(a => a && a.number && a.number.match(PHONE_REGEX))
+			.slice(0, PERSON_LIMIT)
+			.sort((a, b) => a.name.localeCompare(b.name))
 		});
 	}
 }
