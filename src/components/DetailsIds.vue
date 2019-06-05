@@ -1,7 +1,7 @@
 <!-- DetailsIds.vue Manages gettings the details from the service and providing it to the Details component-->
 <template>
     <div class="container-fluid">
-        <div v-for="detailsElement of detailsArray">
+        <div v-for="detailsElement of detailsArray" v-bind:key="detailsElement.id">
             <Details v-bind:details="detailsElement"></Details>
             
         </div>
@@ -10,11 +10,10 @@
 
 <script>
 import {HTTP} from './http-common';
-import _ from 'lodash'
 import Details from './Details'
 
 const PERSON_LIMIT = 5
-const PHONE_REGEX = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/
+const PHONE_REGEX = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/
 
 
 export default {
@@ -34,7 +33,7 @@ export default {
         function getIdList(params, detailsIds, resolve, reject) {
             HTTP.get(`list`, params)
             .then(response => {
-                var retrievedIds = detailsIds.concat(_.map(response.data.result, id => id));
+                var retrievedIds = detailsIds.concat(response.data.result);
                 if (response.data.token && response.data.token.length) {
                     getIdList({params: {token: response.data.token}}, retrievedIds, resolve, reject);
                 } else {
@@ -50,7 +49,8 @@ export default {
             return HTTP.get(`detail/` + detailsId)
             .then(response => {
                 return response.data;
-            }).catch(e => {
+            }).catch(() => {
+                //We are going to eat the error if resource is missing so the group promise doens't fail.
                 return {}
             })
         }
@@ -59,8 +59,7 @@ export default {
         new Promise((resolve, reject) => {
             getIdList({params: {}}, [], resolve, reject)    
         }).then(idList => {
-            return Promise.all(idList.map(id =>  getUserDetails(id)));
-
+            return Promise.all(idList.map(id =>  getUserDetails(id)))
         }).then(detailsArray => {
             this.detailsArray = detailsArray
             .sort((a, b) => a.age - b.age)
